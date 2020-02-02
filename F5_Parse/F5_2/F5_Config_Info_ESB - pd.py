@@ -9,99 +9,78 @@ import re
 import pandas as pd
 
 
-
+#创建df_pool保存pool信息
 df_pool =pd.DataFrame(columns=('Name_Pool ','IP_Member','Name_Monitor'))
+
+#创建df_virtual保存virtual信息
 df_virtual=pd.DataFrame(columns=('Name_Virture','Name_Pool ','Destination','Protocol','Profiles'))
 
+#读取F5配置文件
 with open('waiqianzhi.conf','r') as f:
     content = list(f)
     length=len(content)
-    i=0   
+    i=0
+    #逐行读取
     while i<length:
-        if ('pool' in content[i]) and ('monitor' in content[i+1]):
-            #result=[]
-            Name_Pool=re.split(' ',content[i])[1]
-            #result[0].append[Name_Pool]
-            #print('Name_Pool=',Name_Pool)
+        if ('pool' in content[i]) and ('monitor' in content[i+1]):#定位到pool，下一行为monitor
+            Name_Pool=re.split(' ',content[i])[1]#获取pool名称
             j=0
-            while True:
+            while True:#读取pool结构下所有内容
                 i=i+1
-                if 'monitor all' in content[i]:
-                    Name_Monitor=re.split(' |\n',content[i])[5]
-                    #print('Name_Monitor=',Name_Monitor)
-                    brace=10000
+                if 'monitor all' in content[i]:#定位到monitor
+                    Name_Monitor=re.split(' |\n',content[i])[5]#获取monitor名称
+                    brace=10000 #brace为大括号标志，当brace==0时表明跳出了当前括号
                 if 'members' in content[i]:
-                    brace=1
-                    if '{}' in content[i]:
-                        IP_Member=re.split(' ',content[i])[4]                
-                        #print('IP_Member=',IP_Member)
-                        #result.append([])
-                        df_pool.loc[IP_Member]=[Name_Pool,IP_Member,Name_Monitor]
-                        #result[j].append(IP_Member)
-                        #result[j].append(Name_Pool)
-                        #result[j].append(Name_Monitor)
-                        #csv_write.writerow(df.loc[IP_Member])                           
-                    continue
+                    brace=1#进入members结构
+                    if '{}' in content[i]:#定位到IP_Member
+                        IP_Member=re.split(' ',content[i])[4] #获取 IP_Member              
+                        df_pool.loc[IP_Member]=[Name_Pool,IP_Member,Name_Monitor]#写入到df_pool                     
+                    continue#继续下一次循环
                 else:
-                    if '{' in content[i]:
+                    if '{' in content[i]:#进入下一级大括号brace++
                          brace=brace+1
-                    if '}' in content[i]:
+                    if '}' in content[i]:#跳出当前大括号brace--
                          brace=brace-1            
-                    if ':' in content[i] and '{' in content[i] and '.'in content[i]:
-                        #result.append([])
+                    if ':' in content[i] and '{' in content[i] and '.'in content[i]:#特殊情况
                         IP_Member=re.split('      |/| {',content[i])[1]
                         df_pool.loc[IP_Member]=[Name_Pool,IP_Member,Name_Monitor]                    
-                        #result[j].append(IP_Member)
-                        #result[j].append(Name_Pool)
-                        #result[j].append(Name_Monitor)
-                        #print('IP_Member=',IP_Member)
                         j=j+1
                         continue
-#                        print(result)
-                    if brace==0:
-                        #for k in range(j):
-                            #csv_write.writerow(result[k])
-                        #print('break!')
+                    if brace==0:#members结构结束，跳出当前循环
                         break
-        Name_Pool=Name_Destination=Name_Protocol=Name_profiles=''   
-        if 'virtual' in content[i] and 'address' not in content[i]:
-            Name_Virture=re.split(' ',content[i])[1]
-            #print('Name_Virture=',Name_Virture)
-            brace=1
+        Name_Pool=Name_Destination=Name_Protocol=Name_profiles=''#初始化
+        
+        #解析virtual结构
+        if 'virtual' in content[i] and 'address' not in content[i]:#定位到virtual
+            Name_Virture=re.split(' ',content[i])[1]#获取Name_Virture
+            brace=1#作用同上
             while True:
                 i=i+1
                 if '{' in content[i]:
                     brace=brace+1
                 if '}' in content[i]:
                     brace=brace-1    
-                if 'pool' in content[i] :
+                if 'pool' in content[i] :#定位到pool
                     Name_Pool=re.split(' |\n',content[i])[4]
-                    #print('Name_Pool=',Name_Pool)
                     continue
-                if 'destination' in content[i] :
+                if 'destination' in content[i] :#定位到destination
                     Name_Destination=re.split(' |\n',content[i])[4]
-                    #print('Name_Destination=',Name_Destination)
                     continue
-                if 'protocol' in content[i] :
+                if 'protocol' in content[i] :#定位到protocol
                     Name_Protocol=re.split(' |\n',content[i])[5]
-                    #print('Name_Protocol=',Name_Protocol)
                     continue           
-                if 'profiles' in content[i] :
+                if 'profiles' in content[i] :#定位到profiles
                     Name_profiles=re.split(' |\n',content[i])[4]
-                    #print('Name_profiles=',Name_profiles)
                     continue
-                if brace==0:
+                if brace==0:#跳出当前virtual结构
                     break
-            df_virtual.loc[Name_Virture]=[Name_Virture,Name_Pool,Name_Destination,Name_Protocol,Name_profiles] 
+            df_virtual.loc[Name_Virture]=[Name_Virture,Name_Pool,Name_Destination,Name_Protocol,Name_profiles]#写入到df_virtual 
         i=i+1
-
-#df_members.to_csv('waiqianzhi-members.csv', sep=',', header=True, index=False)
-#df_virtual.to_csv('waiqianzhi-virtual.csv', sep=',', header=True, index=False)
+#关联df_pool和df_virtual
 new=pd.merge(df_pool,df_virtual)
-#new.to_csv('waiqianzhi.csv', sep=',', header=True, index=False)
 
-writer=pd.ExcelWriter('waiqianzhi.xlsx')
-df_pool.to_excel(writer,sheet_name='pool',index=False)
-df_virtual.to_excel(writer,sheet_name='virtual',index=False)
-new.to_excel(writer,sheet_name='pool-virtual',index=False)
+writer=pd.ExcelWriter('waiqianzhi.xlsx')#新建excel
+df_pool.to_excel(writer,sheet_name='pool',index=False)#写入pool
+df_virtual.to_excel(writer,sheet_name='virtual',index=False)#写入virtual
+new.to_excel(writer,sheet_name='pool-virtual',index=False)#写入到pool-virtual
 writer.save()
