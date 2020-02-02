@@ -1,6 +1,6 @@
 IP_Member,Name_Pool ,Name_Monitor,Name_Virture,Destination,Protocol,Profiles
-/Common/11.8.11.18:8066,/Common/pool_IAMMYCAT_8066,/Common/tcp,/Common/vs_IAMMYCAT_8066,/Common/11.8.11.30:8066,tcp,/Common/tcp
-/Common/11.8.11.19:8066,/Common/pool_IAMMYCAT_8066,/Common/tcp,/Common/vs_IAMMYCAT_8066,/Common/11.8.11.30:8066,tcp,/Common/tcp
+/Common/11.8.11.18:8066,/Common/pool_IAMMYCAT_8066,tcp,/Common/vs_IAMMYCAT_8066,/Common/11.8.11.30:8066,tcp,/Common/tcp
+/Common/11.8.11.19:8066,/Common/pool_IAMMYCAT_8066,tcp,/Common/vs_IAMMYCAT_8066,/Common/11.8.11.30:8066,tcp,/Common/tcp
 /Common/11.8.11.24:9081,/Common/pool_IAM_9081,/Common/tcp,/Common/vs_IAM_9081,/Common/11.8.11.28:9081,tcp,/Common/http
 /Common/11.8.11.25:9081,/Common/pool_IAM_9081,/Common/tcp,/Common/vs_IAM_9081,/Common/11.8.11.28:9081,tcp,/Common/http
 /Common/11.8.11.26:9082,/Common/pool_IAM_9082,/Common/tcp,/Common/vs_IAM_9082,/Common/11.8.11.29:9082,tcp,/Common/tcp

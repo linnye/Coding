@@ -9,7 +9,7 @@ import re
 import csv
 
 
-out = open('esb..csv','w', newline='')
+out = open('esb.csv','w', newline='')
 csv_write = csv.writer(out,dialect='excel')
 csv_write.writerow(['IP_Member','Name_Pool ','Name_Monitor'])
 
