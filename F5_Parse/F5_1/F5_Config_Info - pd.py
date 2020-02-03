@@ -7,11 +7,14 @@ Created on Fri Jan 10 23:04:28 2020
 
 import re
 import pandas as pd
-df_members =pd.DataFrame(columns=('IP_Member','Name_Pool ','Name_Monitor'))
+#创建df_pool保存pool信息
+df_pool =pd.DataFrame(columns=('Name_Pool ','IP_Member','Name_Monitor'))
+
+#创建df_virtual保存virtual信息
 df_virtual=pd.DataFrame(columns=('Name_Virture','Name_Pool ','Destination','Protocol','Profiles'))
 
 
-with open('xinxi.conf','r') as f:
+with open('hulianwang.conf','r') as f:
     content = list(f)
     length=len(content)
     i=0   
@@ -36,11 +39,11 @@ with open('xinxi.conf','r') as f:
                 if '/Common/' in content[i] and '{' in content[i]:
                     IP_Member=re.split(' ',content[i])[8]                
                     #print('IP_Member=',IP_Member)
-                    df_members.loc[IP_Member]=[IP_Member,Name_Pool,Name_Monitor]                    
+                    df_pool.loc[IP_Member]=[Name_Pool,IP_Member,Name_Monitor]                    
                     continue        
                 if ':' in content[i] and '{}' in content[i]:
                     IP_Member=re.split('      |/| {',content[i])[1]
-                    df_members.loc[IP_Member]=[IP_Member,Name_Pool,Name_Monitor]                    
+                    df_pool.loc[IP_Member]=[Name_Pool,IP_Member,Name_Monitor]                   
                     #print('IP_Member=',IP_Member)
                     j=j+1
                     continue
@@ -78,9 +81,11 @@ with open('xinxi.conf','r') as f:
                     break
             df_virtual.loc[Name_Virture]=[Name_Virture,Name_Pool,Name_Destination,Name_Protocol,Name_profiles] 
         i=i+1
-out.close()
 
-#df_members.to_csv('bigip-members.csv', sep=',', header=True, index=False)
-#df_virtual.to_csv('bigip-virtual.csv', sep=',', header=True, index=False)
-new=pd.merge(df_members,df_virtual)
-new.to_csv('xinxi.csv', sep=',', header=True, index=False)
+new=pd.merge(df_pool,df_virtual,how='left')
+
+writer=pd.ExcelWriter('hulianwang.xlsx')#新建excel
+df_pool.to_excel(writer,sheet_name='pool',index=False)#写入pool
+df_virtual.to_excel(writer,sheet_name='virtual',index=False)#写入virtual
+new.to_excel(writer,sheet_name='pool-virtual',index=False)#写入到pool-virtual
+writer.save()        

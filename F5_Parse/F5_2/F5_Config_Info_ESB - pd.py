@@ -16,7 +16,7 @@ df_pool =pd.DataFrame(columns=('Name_Pool ','IP_Member','Name_Monitor'))
 df_virtual=pd.DataFrame(columns=('Name_Virture','Name_Pool ','Destination','Protocol','Profiles'))
 
 #读取F5配置文件
-with open('waiqianzhi.conf','r') as f:
+with open('esb.conf','r') as f:
     content = list(f)
     length=len(content)
     i=0
@@ -77,9 +77,9 @@ with open('waiqianzhi.conf','r') as f:
             df_virtual.loc[Name_Virture]=[Name_Virture,Name_Pool,Name_Destination,Name_Protocol,Name_profiles]#写入到df_virtual 
         i=i+1
 #关联df_pool和df_virtual
-new=pd.merge(df_pool,df_virtual)
+new=pd.merge(df_pool,df_virtual,how='left')
 
-writer=pd.ExcelWriter('waiqianzhi.xlsx')#新建excel
+writer=pd.ExcelWriter('esb.xlsx')#新建excel
 df_pool.to_excel(writer,sheet_name='pool',index=False)#写入pool
 df_virtual.to_excel(writer,sheet_name='virtual',index=False)#写入virtual
 new.to_excel(writer,sheet_name='pool-virtual',index=False)#写入到pool-virtual
