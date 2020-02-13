@@ -1,0 +1,552 @@
+profile fastL4 fastL4 {
+   reset on timeout enable
+   reassemble fragments disable
+   idle timeout 300
+   tcp handshake timeout 5
+   tcp close timeout 5
+   mss override 0
+   pva acceleration full
+   tcp timestamp preserve
+   tcp wscale preserve
+   tcp generate isn disable
+   tcp strip sack disable
+   ip tos to client pass
+   ip tos to server pass
+   link qos to client pass
+   link qos to server pass
+   rtt from client disable
+   rtt from server disable
+   loose initiation disable
+   loose close disable
+   software syncookie disable
+   tcp keep alive interval 0
+}
+profile fastL4 esbL4 {
+   defaults from fastL4
+   reset on timeout enable
+   reassemble fragments disable
+   idle timeout 1800
+   tcp handshake timeout 5
+   tcp close timeout 5
+   mss override 0
+   tcp timestamp preserve
+   tcp wscale preserve
+   tcp generate isn disable
+   tcp strip sack disable
+   ip tos to client pass
+   ip tos to server pass
+   link qos to client pass
+   link qos to server pass
+   rtt from client disable
+   rtt from server disable
+   loose initiation disable
+   loose close disable
+   software syncookie disable
+   tcp keep alive interval 0
+}
+profile fastL4 fast_esb {
+   defaults from fastL4
+   reset on timeout disable
+   reassemble fragments disable
+   idle timeout 3000
+   tcp handshake timeout 5
+   tcp close timeout 5
+   mss override 0
+   tcp timestamp preserve
+   tcp wscale preserve
+   tcp generate isn disable
+   tcp strip sack disable
+   ip tos to client pass
+   ip tos to server pass
+   link qos to client pass
+   link qos to server pass
+   rtt from client disable
+   rtt from server disable
+   loose initiation enable
+   loose close enable
+   software syncookie disable
+   tcp keep alive interval 0
+}
+ltm profile dns /Common/dns_ipv6 {
+    app-service none
+    defaults-from /Common/dns
+    use-local-bind no
+}
+ltm profile http /Common/http_weixin {
+    app-service none
+    defaults-from /Common/http
+    insert-xforwarded-for enabled
+}
+ltm profile http /Common/http_xforwarded {
+    app-service none
+    defaults-from /Common/http
+    insert-xforwarded-for enabled
+}
+ltm profile http-compression /Common/http_weixin-compression {
+    app-service none
+    defaults-from /Common/httpcompression
+}
+ltm profile http-compression /Common/http_xforwarded-compression {
+    app-service none
+    defaults-from /Common/httpcompression
+}
+ltm profile tcp /Common/tcp-legacy {
+    abc enabled
+    ack-on-push disabled
+    app-service none
+    auto-proxy-buffer-size disabled
+    auto-receive-window-size disabled
+    auto-send-buffer-size disabled
+    close-wait-timeout 5
+    cmetrics-cache enabled
+    cmetrics-cache-timeout 0
+    congestion-control high-speed
+    defaults-from /Common/tcp
+    deferred-accept disabled
+    delay-window-control disabled
+    delayed-acks enabled
+    dsack disabled
+    early-retransmit disabled
+    ecn disabled
+    enhanced-loss-recovery disabled
+    fast-open disabled
+    fast-open-cookie-expiration 21600
+    fin-wait-2-timeout 300
+    fin-wait-timeout 5
+    idle-timeout 300
+    init-cwnd 3
+    init-rwnd 3
+    ip-tos-to-client 0
+    keep-alive-interval 1800
+    limited-transmit enabled
+    link-qos-to-client 0
+    max-retrans 8
+    max-segment-size 1460
+    md5-signature disabled
+    md5-signature-passphrase none
+    minimum-rto 1000
+    mptcp disabled
+    nagle enabled
+    pkt-loss-ignore-burst 0
+    pkt-loss-ignore-rate 0
+    proxy-buffer-high 16384
+    proxy-buffer-low 4096
+    proxy-mss disabled
+    proxy-options disabled
+    rate-pace disabled
+    rate-pace-max-rate 0
+    receive-window-size 32768
+    reset-on-timeout enabled
+    rexmt-thresh 3
+    selective-acks enabled
+    selective-nack disabled
+    send-buffer-size 32768
+    slow-start enabled
+    syn-cookie-enable enabled
+    syn-cookie-whitelist disabled
+    syn-max-retrans 3
+    syn-rto-base 3000
+    tail-loss-probe disabled
+    time-wait-recycle enabled
+    time-wait-timeout 2000
+    timestamps enabled
+    verified-accept disabled
+    zero-window-timeout 20000
+}
+ltm profile web-acceleration /Common/http_weixin-cache {
+    app-service none
+    defaults-from /Common/webacceleration
+}
+ltm profile web-acceleration /Common/http_xforwarded-cache {
+    app-service none
+    defaults-from /Common/webacceleration
+}
+profile fastL4 forwarding {
+   defaults from fastL4
+   loose initiation enable
+   loose close enable
+}
+profile fasthttp fasthttp-X-Forwarded {
+   defaults from fasthttp
+   max header size 32768
+   max requests 0
+   insert xforwarded for enable
+   layer7 enable
+   header insert none
+}
+profile http http-xForwarded {
+   defaults from http
+   oneconnect transformations enable
+   header insert none
+   header erase none
+   fallback none
+   response selective chunk
+   lws width 80
+   lws separator none
+   redirect rewrite none
+   max header size 32768
+   max requests 0
+   pipelining enable
+   insert xforwarded for enable
+   fallback status none
+   response headers allowed none
+   encrypt cookies none
+}
+profile http zxkf_x-forworad {
+   defaults from http
+   insert xforwarded for enable
+}
+profile persist source_addr_20min {
+   defaults from source_addr
+   mode source addr
+   mirror disable
+   timeout 1200
+   mask none
+   map proxies enable
+   hash alg default
+   across services disable
+   across virtuals disable
+   across pools disable
+   override connection limit disable
+}
+profile tcp tcp-nevertimeout {
+   defaults from tcp
+   reset on timeout enable
+   time wait recycle enable
+   delayed acks enable
+   proxy mss disable
+   proxy options disable
+   deferred accept disable
+   selective acks enable
+   dsack disable
+   ecn disable
+   limited transmit enable
+   rfc1323 enable
+   slow start enable
+   bandwidth delay enable
+   nagle enable
+   abc enable
+   ack on push disable
+   verified accept disable
+   pkt loss ignore rate 0
+   pkt loss ignore burst 0
+   md5 sign disable
+   cmetrics cache enable
+   md5 sign passphrase none
+   proxy buffer low 4096
+   proxy buffer high 16384
+   idle timeout 72000
+   time wait 2000
+   fin wait 5
+   close wait 5
+   send buffer 32768
+   recv window 32768
+   keep alive interval 1800
+   max retrans syn 3
+   max retrans 8
+   ip tos 0
+   link qos 0
+   congestion control highspeed
+   zero window timeout 20000
+}
+ltm profile http /Common/X-Forwarded-For {
+    app-service none
+    defaults-from /Common/http
+    insert-xforwarded-for enabled
+    proxy-type reverse
+}
+ltm profile tcp /Common/tcp-oa {
+    app-service none
+    defaults-from /Common/tcp
+    idle-timeout 1800
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

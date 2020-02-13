@@ -20,6 +20,8 @@ with open('waiqianzhi.conf','r') as f:
     content = list(f)
     length=len(content)
     i=0
+    monitor_dic={}
+    monitor_sub_dic={}
     #逐行读取
     while i<length:
         if ('pool' in content[i]) and ('monitor' in content[i+1]):#定位到pool，下一行为monitor
@@ -75,7 +77,41 @@ with open('waiqianzhi.conf','r') as f:
                 if brace==0:#跳出当前virtual结构
                     break
             df_virtual.loc[Name_Virture]=[Name_Virture,Name_Pool,Name_Destination,Name_Protocol,Name_profiles]#写入到df_virtual 
+        
+        if 'monitor'in content[i] and '{' in content[i]:
+            Name_Monitor=re.split(' ',content[i])[1]
+            #print('Name_Monitor=',Name_Monitor)
+            brace=1
+            monitor_sub_dic={}
+            while True:
+                i=i+1
+                if '}' in content[i]:
+                    brace=0
+                elif brace==1:
+                    monitor_key=re.split(' |\n',content[i])[3]
+                    #print(monitor_key)
+                    if 'send' in content[i]:
+                        monitor_value=re.split('send|\n',content[i])[1]
+                    elif 'defaults' in content[i]:monitor_value=re.split(' |\n',content[i])[5]
+                    else: monitor_value=re.split(' |\n',content[i])[4]
+                    #print(monitor_key,'=',monitor_value)        
+                    monitor_sub_dic[monitor_key]=monitor_value
+                if brace==0:
+                    monitor_dic[Name_Monitor]=monitor_sub_dic
+                    break
+
+
+
+
+
+
+
+
+
+
+
         i=i+1
+df_monitor_para=pd.DataFrame.from_dict(monitor_dic,orient='index')    
 #关联df_pool和df_virtual
 new=pd.merge(df_pool,df_virtual,how='left')
 
@@ -83,4 +119,5 @@ writer=pd.ExcelWriter('waiqianzhi.xlsx')#新建excel
 df_pool.to_excel(writer,sheet_name='pool',index=False)#写入pool
 df_virtual.to_excel(writer,sheet_name='virtual',index=False)#写入virtual
 new.to_excel(writer,sheet_name='pool-virtual',index=False)#写入到pool-virtual
+df_monitor_para.to_excel(writer,sheet_name='monitor_para',index=True)
 writer.save()
