@@ -16,11 +16,11 @@ df_pool_sub =pd.DataFrame(columns=('Name_Pool ','IP_Member','Name_Monitor'))
 df_virtual=pd.DataFrame(columns=('Name_Virture','Name_Pool ','Destination','Protocol','Profiles'))
 
 
-with open('xinxi.conf','r') as f:
+with open('guimian.conf','r',encoding='UTF-8') as f:
     content = list(f)
     length=len(content)
     monitor_dic={}
-    monitor_sub_dic={}
+    profile_dic={}
     i=0   
     while i<length:
         IP_Member=Name_Pool=IP_Member=Name_Monitor=''
@@ -36,7 +36,9 @@ with open('xinxi.conf','r') as f:
                 if '}' in content[i]:
                     brace=brace-1   
                 if '/Common/' in content[i] and '{' in content[i]:
-                    IP_Member=re.split(' ',content[i])[8]                
+                    IP_Member=re.split(' ',content[i])[8]
+                    if 'address' in content[i+1]:
+                        IP=re.split(' |\n',content[i+1])[13]                
                     #print('IP_Member=',IP_Member)
                     df_pool_sub.loc[j]=[Name_Pool,IP_Member,''] 
                     j=j+1                   
@@ -96,9 +98,41 @@ with open('xinxi.conf','r') as f:
                     monitor_dic[Name_Monitor]=monitor_sub_dic
                     break
             
+        if 'ltm profile'in content[i] and '{' in content[i]:
+            Name_Profile=re.split(' ',content[i])[3]
+            #print('Name_Monitor=',Name_Monitor)
+            brace=1
+            profile_sub_dic={}
+            while True:
+                i=i+1
+                if '}' in content[i]:
+                    brace=0
+                elif brace==1:
+                    profile_key=re.split(' |\n',content[i])[4]
+                    profile_value=re.split(' |\n',content[i])[5]        
+                    profile_sub_dic[profile_key]=profile_value
+                if brace==0:
+                    profile_dic[Name_Profile]=profile_sub_dic
+                    break            
             
-            
-            
+        if 'profile'in content[i] and 'ltm' not in content[i]:
+            Name_Profile=re.split(' ',content[i])[2]
+            #print('Name_Monitor=',Name_Monitor)
+            brace=1
+            profile_sub_dic={}
+            while True:
+                i=i+1
+                if '}' in content[i]:
+                    brace=0
+                elif brace==1:
+                    #profile_key=str.join(re.split(' ',content[i]).pop(-1))
+                    profile_key='-'.join(re.split(' ',content[i])[3:-1])
+                    profile_value=re.split(' |\n',content[i])[-2]        
+                    profile_sub_dic[profile_key]=profile_value
+                if brace==0:
+                    profile_dic[Name_Profile]=profile_sub_dic
+                    break            
+                        
             
             
         i=i+1
@@ -106,12 +140,13 @@ with open('xinxi.conf','r') as f:
         
         
 df_monitor_para=pd.DataFrame.from_dict(monitor_dic,orient='index')        
-        
+df_profile_para=pd.DataFrame.from_dict(profile_dic,orient='index')         
 new=pd.merge(df_pool,df_virtual,how='left')
 
-writer=pd.ExcelWriter('xinxi..xlsx')#新建excel，输出结果
+writer=pd.ExcelWriter('guimian.xlsx')#新建excel，输出结果
 df_pool.to_excel(writer,sheet_name='pool',index=False)#写入pool
 df_virtual.to_excel(writer,sheet_name='virtual',index=False)#写入virtual
 new.to_excel(writer,sheet_name='pool-virtual',index=False)#写入到pool-virtual
 df_monitor_para.to_excel(writer,sheet_name='monitor_para',index=True)
+df_profile_para.to_excel(writer,sheet_name='profile_para',index=True)
 writer.save()        

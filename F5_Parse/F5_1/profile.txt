@@ -262,7 +262,133 @@ ltm profile tcp /Common/tcp-oa {
 }
 
 
-
+ltm profile client-ssl /Common/GMAPP_SSL {
+    app-service none
+    cert /Common/gmprod.crt
+    defaults-from /Common/clientssl
+    key /Common/gmprod.key
+}
+ltm profile client-ssl /Common/gmdrcbank {
+    alert-timeout 10
+    allow-non-ssl disabled
+    app-service none
+    cache-size 262144
+    cache-timeout 3600
+    cert /Common/gmdrcbank.crt
+    chain /Common/gmmiddle.crt
+    ciphers DEFAULT
+    defaults-from /Common/clientssl
+    handshake-timeout 10
+    key /Common/gmdrcbankkey.key
+    mod-ssl-methods disabled
+    options { dont-insert-empty-fragments }
+    passphrase $M$kV$mLm5nNnIm9RpMj01cT7zrw==
+    proxy-ssl disabled
+    renegotiate-max-record-delay indefinite
+    renegotiate-period indefinite
+    renegotiate-size indefinite
+    renegotiation enabled
+    secure-renegotiation require
+    server-name none
+    session-ticket disabled
+    sni-default false
+    sni-require false
+    strict-resume disabled
+    unclean-shutdown enabled
+}
+ltm profile client-ssl /Common/gmdrcbank2017 {
+    alert-timeout 10
+    allow-non-ssl disabled
+    app-service none
+    cache-size 262144
+    cache-timeout 3600
+    cert /Common/gmdrcbank-201709.crt
+    chain /Common/gmdrcbank-sha2bundlemix.crt
+    ciphers DEFAULT
+    defaults-from /Common/clientssl
+    handshake-timeout 10
+    key /Common/gmdrcbank-201709.key
+    mod-ssl-methods disabled
+    options { dont-insert-empty-fragments }
+    proxy-ssl disabled
+    renegotiate-max-record-delay indefinite
+    renegotiate-period indefinite
+    renegotiate-size indefinite
+    renegotiation enabled
+    secure-renegotiation require
+    server-name none
+    session-ticket disabled
+    sni-default false
+    sni-require false
+    strict-resume disabled
+    unclean-shutdown enabled
+}
+ltm profile client-ssl /Common/gmdrcbank2018 {
+    app-service none
+    cert /Common/gmdrcbank-201806.crt
+    chain /Common/gmdrcbank-2018-ov-ca.crt
+    defaults-from /Common/clientssl
+    key /Common/gmdrcbank-201806.key
+    proxy-ssl disabled
+}
+ltm profile client-ssl /Common/gmdrcbank-sha2 {
+    app-service none
+    cert /Common/gmdrcbank-sha2.crt
+    chain /Common/gmdrcbank-sha2bundlemix.crt
+    defaults-from /Common/clientssl
+    key /Common/gmdrcbank-sha2.key
+}
+ltm profile http /Common/http_new {
+    app-service none
+    defaults-from /Common/http
+    redirect-rewrite all
+}
+ltm profile tcp /Common/tcp-nevertimeout {
+    abc enabled
+    ack-on-push enabled
+    app-service none
+    close-wait-timeout 5
+    cmetrics-cache enabled
+    congestion-control high-speed
+    defaults-from /Common/tcp
+    deferred-accept disabled
+    delay-window-control disabled
+    delayed-acks enabled
+    dsack disabled
+    ecn disabled
+    fin-wait-timeout 5
+    hardware-syn-cookie enabled
+    idle-timeout 72000
+    init-cwnd 0
+    init-rwnd 0
+    ip-tos-to-client 0
+    keep-alive-interval 1800
+    limited-transmit enabled
+    link-qos-to-client 0
+    max-retrans 8
+    md5-signature disabled
+    md5-signature-passphrase none
+    nagle disabled
+    pkt-loss-ignore-burst 0
+    pkt-loss-ignore-rate 0
+    proxy-buffer-high 49152
+    proxy-buffer-low 32768
+    proxy-mss disabled
+    proxy-options disabled
+    receive-window-size 65535
+    reset-on-timeout enabled
+    selective-acks enabled
+    selective-nack disabled
+    send-buffer-size 65535
+    slow-start enabled
+    syn-max-retrans 3
+    syn-rto-base 0
+    time-wait-recycle enabled
+    time-wait-timeout 2000
+    timestamps enabled
+    verified-accept disabled
+    zero-window-timeout 20000
+}
 
 
 
