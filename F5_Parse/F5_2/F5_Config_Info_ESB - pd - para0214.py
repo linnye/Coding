@@ -72,7 +72,7 @@ def Parse(file_name,df_pool,df_pool_sub,df_virtual,monitor_dic):
                         continue
                     if brace==0:#跳出当前virtual结构
                         break
-                df_virtual.loc[Name_Virture]=[file_name,Name_Virture,Name_Pool,Name_Destination,Name_Protocol,Name_profiles]#写入到df_virtual 
+                df_virtual.loc[file_name+Name_Virture]=[file_name,Name_Virture,Name_Pool,Name_Destination,Name_Protocol,Name_profiles]#写入到df_virtual 
             
             if 'monitor'in content[i] and '{' in content[i]:
                 Name_Monitor=re.split(' ',content[i])[1]
@@ -95,16 +95,6 @@ def Parse(file_name,df_pool,df_pool_sub,df_virtual,monitor_dic):
                     if brace==0:
                         monitor_dic[Name_Monitor]=monitor_sub_dic
                         break
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
             i=i+1
     return df_pool,df_virtual,monitor_dic
@@ -131,12 +121,12 @@ for file_name in file_list:
 
 df_monitor_para=pd.DataFrame.from_dict(monitor_dic,orient='index')        
         
-new=pd.merge(df_pool,df_virtual,how='left',on=['F5_Name','Name_Pool'])
-new2=pd.merge(df_virtual,df_pool,how='left',on=['F5_Name','Name_Pool'])
+df_pool_virtual=pd.merge(df_pool,df_virtual,how='left',on=['F5_Name','Name_Pool'])#以pool为主表关联virtual
+df_virtual_pool=pd.merge(df_virtual,df_pool,how='left',on=['F5_Name','Name_Pool'])#以virtual为主表关联pool
 writer=pd.ExcelWriter('result.xlsx')#新建excel，输出结果
 df_pool.to_excel(writer,sheet_name='pool',index=False)#写入pool
 df_virtual.to_excel(writer,sheet_name='virtual',index=False)#写入virtual
-new.to_excel(writer,sheet_name='pool-virtual',index=False)#写入到pool-virtual
-new2.to_excel(writer,sheet_name='virtual-pool',index=False)#写入到pool-virtual
-df_monitor_para.to_excel(writer,sheet_name='monitor_para',index=True)
+df_pool_virtual.to_excel(writer,sheet_name='pool-virtual',index=False)#写入到pool-virtual
+df_virtual_pool.to_excel(writer,sheet_name='virtual-pool',index=False)#写入到virtual-pool
+df_monitor_para.to_excel(writer,sheet_name='monitor_para',index=True)#写入到monitor_para
 writer.save()        

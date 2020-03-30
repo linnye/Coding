@@ -43,7 +43,7 @@ def Parse(file_name,df_pool,df_pool_sub,df_virtual,monitor_dic):
                         Name_Monitor=re.split(' |\n',content[i])[5]
                         df_pool_sub.loc[:,'Name_Monitor']=Name_Monitor#将Name_Monitor写入当前pool信息表中
                         df_pool=pd.concat([df_pool,df_pool_sub])#合并到总的pool信息表中
-                        df_pool_sub=df_pool_sub[df_pool_sub.IP_Member == '']#情况当前pool信息，方便存储下一个pool信息
+                        df_pool_sub=df_pool_sub[df_pool_sub.IP_Member == '']#当前pool信息，方便存储下一个pool信息
                         #print('Name_Monitor=',Name_Monitor)
                         continue
                     if brace==0:
@@ -74,8 +74,10 @@ def Parse(file_name,df_pool,df_pool_sub,df_virtual,monitor_dic):
                         continue
                     if brace==0:
                         break
-                df_virtual.loc[Name_Virture]=[file_name,Name_Virture,Name_Pool,Name_Destination,Name_Protocol,Name_profiles] 
-            
+                df_virtual.loc[file_name+Name_Virture]=[file_name,Name_Virture,Name_Pool,Name_Destination,Name_Protocol,Name_profiles]
+                #df_virtual.append([file_name,Name_Virture,Name_Pool,Name_Destination,Name_Protocol,Name_profiles],ignore_index=True)
+                
+            #解析monitor参数
             if 'ltm monitor'in content[i] and '{' in content[i]:
                 Name_Monitor=re.split(' ',content[i])[3]
                 #print('Name_Monitor=',Name_Monitor)
@@ -94,12 +96,7 @@ def Parse(file_name,df_pool,df_pool_sub,df_virtual,monitor_dic):
                     if brace==0:
                         monitor_dic[Name_Monitor]=monitor_sub_dic
                         break
-                
-                
-                
-                
-                
-                
+
             i=i+1
     return df_pool,df_virtual,monitor_dic
 #解析函数结束        
@@ -113,24 +110,25 @@ df_pool_sub =pd.DataFrame(columns=('F5_Name','Name_Pool','IP_Member','IP','Name_
 df_virtual=pd.DataFrame(columns=('F5_Name','Name_Virture','Name_Pool','Destination','Protocol','Profiles'))
 monitor_dic={}            
 
-
+#获取当前目录下的文件
 cwd=os.getcwd()
 for files in os.walk(cwd):
     file_list=files[2]  
 
+#获将当前目录下配置文件逐一进行解析并合并数据
 for file_name in file_list:
     if '.conf' in file_name:
         print(file_name)   
         df_pool,df_virtual,monitor_dic=Parse(file_name,df_pool,df_pool_sub,df_virtual,monitor_dic)
 
-df_monitor_para=pd.DataFrame.from_dict(monitor_dic,orient='index')        
+df_monitor_para=pd.DataFrame.from_dict(monitor_dic,orient='index')#将monitor参数字典转换成dataframe
         
-new=pd.merge(df_pool,df_virtual,how='left',on=['F5_Name','Name_Pool'])
-new2=pd.merge(df_virtual,df_pool,how='left',on=['F5_Name','Name_Pool'])
+df_pool_virtual=pd.merge(df_pool,df_virtual,how='left',on=['F5_Name','Name_Pool'])#以pool为主表关联virtual
+df_virtual_pool=pd.merge(df_virtual,df_pool,how='left',on=['F5_Name','Name_Pool'])#以virtual为主表关联pool
 writer=pd.ExcelWriter('result.xlsx')#新建excel，输出结果
 df_pool.to_excel(writer,sheet_name='pool',index=False)#写入pool
 df_virtual.to_excel(writer,sheet_name='virtual',index=False)#写入virtual
-new.to_excel(writer,sheet_name='pool-virtual',index=False)#写入到pool-virtual
-new2.to_excel(writer,sheet_name='virtual-pool',index=False)#写入到pool-virtual
-df_monitor_para.to_excel(writer,sheet_name='monitor_para',index=True)
+df_pool_virtual.to_excel(writer,sheet_name='pool-virtual',index=False)#写入到pool-virtual
+df_virtual_pool.to_excel(writer,sheet_name='virtual-pool',index=False)#写入到virtual-pool
+df_monitor_para.to_excel(writer,sheet_name='monitor_para',index=True)#写入到monitor_para
 writer.save()        
